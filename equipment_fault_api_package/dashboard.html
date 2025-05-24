@@ -1,0 +1,117 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Equipment Fault Prediction</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #e3f2fd, #ffffff);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .dashboard {
+      background-color: #ffffff;
+      padding: 30px 40px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      max-width: 500px;
+      width: 100%;
+    }
+
+    h2 {
+      text-align: center;
+      color: #1565c0;
+      margin-bottom: 20px;
+    }
+
+    label {
+      font-weight: 600;
+      display: block;
+      margin-top: 15px;
+      margin-bottom: 5px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-sizing: border-box;
+    }
+
+    button {
+      margin-top: 25px;
+      width: 100%;
+      padding: 12px;
+      background-color: #1976d2;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #0d47a1;
+    }
+
+    #result {
+      margin-top: 25px;
+      padding: 15px;
+      text-align: center;
+      font-size: 18px;
+      border-radius: 8px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard">
+    <h2>Equipment Fault Prediction</h2>
+
+    <label for="temperature">Temperature (°C)</label>
+    <input type="number" id="temperature" step="0.1" placeholder="e.g. 75.0" />
+
+    <label for="pressure">Pressure (bar)</label>
+    <input type="number" id="pressure" step="0.1" placeholder="e.g. 30.0" />
+
+    <label for="vibration">Vibration (mm/s)</label>
+    <input type="number" id="vibration" step="0.01" placeholder="e.g. 2.5" />
+
+    <label for="humidity">Humidity (%)</label>
+    <input type="number" id="humidity" step="0.1" placeholder="e.g. 50.0" />
+
+    <label for="equipment">Equipment Type</label>
+    <select id="equipment">
+      <option value="0">Pump</option>
+      <option value="1">Compressor</option>
+      <option value="2">Fan</option>
+    </select>
+
+    <label for="location">Location</label>
+    <select id="location">
+      <option value="0">New York</option>
+      <option value="1">Houston</option>
+      <option value="2">Chicago</option>
+      <option value="3">Atlanta</option>
+      <option value="4">San Francisco</option>
+    </select>
+
+    <button onclick="sendPrediction()">Predict</button>
+    <div id="result" style="display: none;"></div>
+  </div>
+
+  <script src="dashboard_script.js"></script>
+</body>
+</html>
