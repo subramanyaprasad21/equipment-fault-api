@@ -6,8 +6,8 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 import os
 
-# Load dataset
-data = pd.read_csv("equipment_anomaly_data.csv")
+# Load your dataset (must be in same folder as this script on Render)
+data = pd.read_csv("equipment_fault_api_package/equipment_anomaly_data.csv")
 
 # Encode categorical columns
 data_clean = data.copy()
@@ -19,12 +19,16 @@ for col in ["equipment", "location"]:
 X = data_clean.drop(columns=["faulty"])
 y = data_clean["faulty"]
 
-# Split and train model
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# Train/test split
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+# Train the model
 model = RandomForestClassifier(n_estimators=100, random_state=42)
 model.fit(X_train, y_train)
 
-# Set up Flask app
+# Create Flask API
 app = Flask(__name__)
 CORS(app)
 
@@ -47,5 +51,6 @@ def predict():
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
+# ✅ Required for Render (dynamic port binding)
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
