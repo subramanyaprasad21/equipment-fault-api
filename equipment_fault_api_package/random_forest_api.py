@@ -35,18 +35,23 @@ model.fit(X_train, y_train)
 app = Flask(__name__)
 CORS(app)
 
+# Root endpoint for health check
+@app.route("/", methods=["GET"])
+def home():
+    return "API is running!", 200
+
 @app.route("/predict", methods=["POST"])
 def predict():
     try:
         data = request.get_json()
-        
+
         # Ensure equipment/location values are integer-encoded
-        # If you want to accept string names, uncomment the following lines:
+        # If you want to accept string names from the frontend, uncomment the following lines:
         # if isinstance(data.get("equipment"), str):
         #     data["equipment"] = int(equipment_le.transform([data["equipment"]])[0])
         # if isinstance(data.get("location"), str):
         #     data["location"] = int(location_le.transform([data["location"]])[0])
-        
+
         df = pd.DataFrame([data])
         prediction = model.predict(df)[0]
         probability = model.predict_proba(df)[0].tolist()
