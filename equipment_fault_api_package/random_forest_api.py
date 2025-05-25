@@ -9,15 +9,18 @@ import os
 # Load your dataset (must be in same folder as this script on Render)
 data = pd.read_csv("equipment_fault_api_package/equipment_anomaly_data.csv")
 
-# Encode categorical columns
-data_clean = data.copy()
-for col in ["equipment", "location"]:
-    le = LabelEncoder()
-    data_clean[col] = le.fit_transform(data_clean[col])
+# Encode categorical columns and save mappings for user
+equipment_le = LabelEncoder()
+location_le = LabelEncoder()
+data['equipment'] = equipment_le.fit_transform(data['equipment'])
+data['location'] = location_le.fit_transform(data['location'])
+
+print("Equipment mapping:", dict(zip(equipment_le.classes_, equipment_le.transform(equipment_le.classes_))))
+print("Location mapping:", dict(zip(location_le.classes_, location_le.transform(location_le.classes_))))
 
 # Prepare features and target
-X = data_clean.drop(columns=["faulty"])
-y = data_clean["faulty"]
+X = data.drop(columns=["faulty"])
+y = data["faulty"]
 
 # Train/test split
 X_train, X_test, y_train, y_test = train_test_split(
@@ -36,6 +39,14 @@ CORS(app)
 def predict():
     try:
         data = request.get_json()
+        
+        # Ensure equipment/location values are integer-encoded
+        # If you want to accept string names, uncomment the following lines:
+        # if isinstance(data.get("equipment"), str):
+        #     data["equipment"] = int(equipment_le.transform([data["equipment"]])[0])
+        # if isinstance(data.get("location"), str):
+        #     data["location"] = int(location_le.transform([data["location"]])[0])
+        
         df = pd.DataFrame([data])
         prediction = model.predict(df)[0]
         probability = model.predict_proba(df)[0].tolist()
