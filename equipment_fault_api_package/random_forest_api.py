@@ -18,7 +18,7 @@ data['location'] = location_le.fit_transform(data['location'])
 
 # Prepare X, y
 X = data[['equipment', 'location', 'temperature', 'pressure', 'humidity']]
-y = data['anomaly']
+y = data['faulty']  # <-- Updated to match your CSV
 
 # Train/test split
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -50,7 +50,7 @@ def predict():
 
     X_pred = [[equipment_enc, location_enc, temperature, pressure, humidity]]
     prediction = model.predict(X_pred)[0]
-    return jsonify({'anomaly': int(prediction)})
+    return jsonify({'faulty': int(prediction)})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
