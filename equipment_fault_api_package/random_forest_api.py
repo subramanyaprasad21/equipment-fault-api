@@ -6,18 +6,19 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 import os
 
-# Load your dataset (make sure path is correct)
-data = pd.read_csv("equipment_fault_api_package/equipment_anomaly_data.csv")
+# Correctly get the path to the CSV file (works in deployment!)
+csv_path = os.path.join(os.path.dirname(__file__), "equipment_anomaly_data.csv")
+data = pd.read_csv(csv_path)
 
-# Encode categorical columns and keep encoders
+# Label encoding for categorical columns
 equipment_le = LabelEncoder()
 location_le = LabelEncoder()
 data['equipment'] = equipment_le.fit_transform(data['equipment'])
 data['location'] = location_le.fit_transform(data['location'])
 
-# Prepare features and target
-X = data.drop(columns=["faulty"])
-y = data["faulty"]
+# Prepare X, y
+X = data[['equipment', 'location', 'temperature', 'pressure', 'humidity']]
+y = data['anomaly']
 
 # Train/test split
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -26,38 +27,30 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 model = RandomForestClassifier(n_estimators=100, random_state=42)
 model.fit(X_train, y_train)
 
+# Flask API setup
 app = Flask(__name__)
 CORS(app)
 
-@app.route("/", methods=["GET"])
+@app.route('/', methods=['GET'])
 def home():
-    return "API is running!", 200
+    return "Equipment Fault Prediction API is running!"
 
-@app.route("/predict", methods=["POST"])
+@app.route('/predict', methods=['POST'])
 def predict():
-    try:
-        data = request.get_json()
+    data_json = request.get_json()
+    equipment = data_json['equipment']
+    location = data_json['location']
+    temperature = data_json['temperature']
+    pressure = data_json['pressure']
+    humidity = data_json['humidity']
 
-        # Convert string to encoded if needed
-        if isinstance(data.get("equipment"), str):
-            data["equipment"] = int(equipment_le.transform([data["equipment"]])[0])
-        if isinstance(data.get("location"), str):
-            data["location"] = int(location_le.transform([data["location"]])[0])
+    # Encode input using the same encoders
+    equipment_enc = equipment_le.transform([equipment])[0]
+    location_enc = location_le.transform([location])[0]
 
-        df = pd.DataFrame([data])
-        prediction = model.predict(df)[0]
-        proba = model.predict_proba(df)[0].tolist()
-
-        return jsonify({
-            "prediction": int(prediction),
-            "confidence": {
-                "not_faulty": round(proba[0], 3),
-                "faulty": round(proba[1], 3)
-            }
-        })
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 400
+    X_pred = [[equipment_enc, location_enc, temperature, pressure, humidity]]
+    prediction = model.predict(X_pred)[0]
+    return jsonify({'anomaly': int(prediction)})
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    app.run(host="0.0.0.0", port=5000)
