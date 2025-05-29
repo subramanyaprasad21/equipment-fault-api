@@ -6,21 +6,26 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 import os
 
+# Load your dataset
 csv_path = os.path.join(os.path.dirname(__file__), "equipment_anomaly_data.csv")
 data = pd.read_csv(csv_path)
 
+# Encode categorical columns
 equipment_le = LabelEncoder()
 location_le = LabelEncoder()
 data['equipment'] = equipment_le.fit_transform(data['equipment'])
 data['location'] = location_le.fit_transform(data['location'])
 
+# Prepare features and target
 X = data[['equipment', 'location', 'temperature', 'pressure', 'humidity']]
 y = data['faulty']
 
+# Train/test split and model training
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 model = RandomForestClassifier(n_estimators=100, random_state=42)
 model.fit(X_train, y_train)
 
+# Set up Flask app
 app = Flask(__name__)
 CORS(app)
 
@@ -43,19 +48,19 @@ def predict():
     X_pred = [[equipment_enc, location_enc, temperature, pressure, humidity]]
 
     prediction = model.predict(X_pred)[0]
-    confidence = model.predict_proba(X_pred)[0][prediction]  # Confidence for predicted class
+    confidence = model.predict_proba(X_pred)[0][prediction]
 
-    # Optional: Convert to label
     label = "Faulty" if prediction == 1 else "Not Faulty"
 
     result = {
         "faulty": int(prediction),
         "label": label,
-        "confidence": round(confidence * 100, 2),  # percentage
-        "equipment": equipment,                    # already a name, not number
-        "location": location                       # already a name, not number
+        "confidence": round(confidence * 100, 2),
+        "equipment": equipment,
+        "location": location
     }
     return jsonify(result)
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)
+    port = int(os.environ.get("PORT", 8080))  # Use Railway/Heroku PORT or default to 8080
+    app.run(host="0.0.0.0", port=port)
